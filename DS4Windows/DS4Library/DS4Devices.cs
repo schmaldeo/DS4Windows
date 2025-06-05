@@ -68,6 +68,60 @@ namespace DS4Windows
         }
     }
 
+    public enum ConnectionTypeDeterminer
+    {
+        Undefined,
+        DS4,
+        DualSense,
+        SwitchPro,
+        JoyCon,
+        DS3,
+    }
+
+    public class CustomDeviceInfo
+    {
+		public string Name { get; init; }
+		public int Vid { get; init; }
+		public int Pid { get; init; }
+		public InputDeviceType InputDevType { get; init; }
+		public VidPidFeatureSet FeatureSet { get; init; }
+		public bool EnableDetection { get; init; }
+        public ConnectionTypeDeterminer? ConnectionTypeDeterminer { get; init; }
+
+		public CustomDeviceInfo() {}
+
+        public VidPidInfo GetVidPidInfo()
+        {
+            CheckConnectionDelegate connectionTypeDeterminer = null;
+			switch (this.ConnectionTypeDeterminer) {
+
+				case DS4Windows.ConnectionTypeDeterminer.DS4:
+					connectionTypeDeterminer = DS4Device.HidConnectionType;
+					break;
+				case DS4Windows.ConnectionTypeDeterminer.DualSense:
+					connectionTypeDeterminer = DualSenseDevice.HidConnectionType;
+					break;
+				case DS4Windows.ConnectionTypeDeterminer.SwitchPro:
+					connectionTypeDeterminer = SwitchProDevice.HidConnectionType;
+					break;
+				case DS4Windows.ConnectionTypeDeterminer.JoyCon:
+					connectionTypeDeterminer = JoyConDevice.HidConnectionType;
+					break;
+				case DS4Windows.ConnectionTypeDeterminer.DS3:
+					connectionTypeDeterminer = DS3Device.HidConnectionType;
+					break;
+				case DS4Windows.ConnectionTypeDeterminer.Undefined:
+                    connectionTypeDeterminer = null;
+					break;
+				case null:
+					break;
+				default:
+					break;
+			}
+			return new VidPidInfo(Vid,Pid,Name,InputDevType,FeatureSet,connectionTypeDeterminer);
+		}
+	}
+
     public class RequestElevationArgs : EventArgs
     {
         public const int STATUS_SUCCESS = 0;
