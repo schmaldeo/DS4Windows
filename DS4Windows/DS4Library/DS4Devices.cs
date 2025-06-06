@@ -19,9 +19,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Security.Principal;
+using System.Text.Json;
 using DS4Windows.InputDevices;
 
 namespace DS4Windows
@@ -190,6 +192,10 @@ namespace DS4Windows
         internal const int JOYCON_L_PRODUCT_ID = 0x2006;
         internal const int JOYCON_R_PRODUCT_ID = 0x2007;
         internal const int JOYCON_CHARGING_GRIP_PRODUCT_ID = 0x200E;
+
+
+        public const string customDevicesJsonFileName = "CustomDevices.json";
+        public static string CustomDevicesJsonFilePath => Path.Combine(DS4Windows.Global.appdatapath, customDevicesJsonFileName);
 
         // https://support.steampowered.com/kb_article.php?ref=5199-TOKV-4426&l=english web site has a list of other PS4 compatible device VID/PID values and brand names. 
         // However, not all those are guaranteed to work with DS4Windows app so support is added case by case when users of DS4Windows app tests non-official DS4 gamepads.
@@ -465,6 +471,22 @@ namespace DS4Windows
                 Devices.Values.CopyTo(controllers, 0);
                 return controllers;
             }
+        }
+
+		public static CustomDeviceInfo[] LoadCustomDevicesListFromDisk()
+		{
+			var options = new JsonSerializerOptions { WriteIndented = true };
+			string jsonString = File.ReadAllText(CustomDevicesJsonFilePath);
+			return JsonSerializer.Deserialize<CustomDeviceInfo[]>(jsonString);
+		}
+
+        public static void SaveCustomDevicesListToDisk(CustomDeviceInfo[] cDevsList)
+        {
+			var options = new JsonSerializerOptions { WriteIndented = true };
+			string jsonString = JsonSerializer.Serialize(cDevsList, options);
+			File.WriteAllText(CustomDevicesJsonFilePath, jsonString);
+        }
+
 		private static VidPidInfo[] GetSupportedDevices()
         {
 			var supportedDevicesList = DS4Devices.knownDevices.ToList();
