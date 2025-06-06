@@ -255,6 +255,21 @@ namespace DS4WinWPF
                 rootHub.CheckHidHidePresence();
             }
 
+            // Try loading custom devices from disk
+            CustomDeviceInfo[] customDevs = null;
+			if (File.Exists(DS4Devices.CustomDevicesJsonFilePath)) {
+				try {
+					customDevs = DS4Windows.DS4Devices.LoadCustomDevicesListFromDisk();
+				}
+				catch {
+					rootHub.LogDebug(DS4WinWPF.Translations.Strings.CustomDevices_Log_LoadFail);
+				}
+			}
+            if(customDevs != null) {
+				DS4Devices.SetCustomDevices(customDevs);
+			}
+			
+
             rootHub.LoadPermanentSlotsConfig();
             window.LateChecks(parser);
         }
