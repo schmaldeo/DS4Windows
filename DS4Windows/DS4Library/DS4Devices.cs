@@ -240,6 +240,7 @@ namespace DS4Windows
             new VidPidInfo(0x0C12, 0x0E15, "Playmax Wired Controller (PS4)", InputDeviceType.DS4, VidPidFeatureSet.NoBatteryReading | VidPidFeatureSet.NoGyroCalib), // Generic PS4 Controller by Playmax (brand primarily in New Zealand). Standard Wired PS4 controller, no Gyro, no Lightbar, no Battery. There is a newer model but I'm not sure if it uses a different Vid or Pid yet.
         };
 
+        private static CustomDeviceInfo[] customDevices = null;
 		private static VidPidInfo[] supportedDevices = knownDevices;
 
         private static bool detectNewControllers = true;
@@ -464,6 +465,21 @@ namespace DS4Windows
                 Devices.Values.CopyTo(controllers, 0);
                 return controllers;
             }
+        /// <summary>
+        /// Sets a new array of Custom Devices to be used in the detection logic, while also refreshing the SupportedDevices array
+        /// </summary>
+        /// <param name="customDevices"></param>
+        public static void SetCustomDevices(CustomDeviceInfo[] customDevices)
+        {
+			DS4Devices.customDevices = customDevices.ToArray();
+		} 
+
+        /// <summary>
+        /// Returns a copy of the current array of Custom Devices 
+        /// </summary>
+        /// <returns></returns>
+        public static CustomDeviceInfo[] GetCustomDevices() {
+            return customDevices.ToArray();
         }
 
         public static void stopControllers()
