@@ -888,6 +888,23 @@ namespace DS4WinWPF.Translations {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to teste.
+        /// </summary>
+        public static string CustomDevices_Log_LoadFail {
+            get {
+                return ResourceManager.GetString("CustomDevices_Log_LoadFail", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Loading list of custom devices type from disk..
+        /// </summary>
+        public static string CustomDevices_Log_LoadingFile {
+            get {
+                return ResourceManager.GetString("CustomDevices_Log_LoadingFile", resourceCulture);
+            }
+        }
+        
         ///   Looks up a localized string similar to Custom Exe Name.
         /// </summary>
         public static string CustomExeName {

@@ -1478,4 +1478,10 @@ Please click OK to confirm that you have read the message. Press Cancel to be re
   <data name="InverseMotors" xml:space="preserve">
     <value>Inverse motors</value>
   </data>
+  <data name="CustomDevices_Log_LoadingFile" xml:space="preserve">
+    <value>Loading list of custom devices type from disk.</value>
+  </data>
+  <data name="CustomDevices_Log_LoadFail" xml:space="preserve">
+    <value>teste</value>
+  </data>
 </root>
