@@ -465,6 +465,38 @@ namespace DS4Windows
                 Devices.Values.CopyTo(controllers, 0);
                 return controllers;
             }
+		private static VidPidInfo[] GetSupportedDevices()
+        {
+			var supportedDevicesList = DS4Devices.knownDevices.ToList();
+
+			if (customDevices != null) {
+                foreach (var cDev in customDevices) {
+					AppLogger.LogToGui($"Custom device {cDev.Vid:X4}:{cDev.Pid:X4} ({cDev.Name}) set to{(cDev.EnableDetection ? "" : " NOT")} be detected. [ Type: {(InputDeviceType)cDev.InputDevType} ][ FeatureSet: {Convert.ToString((int)cDev.FeatureSet, 2):7} ][ ConnectionTypeDeterminer: {((cDev.ConnectionTypeDeterminer != null) ? (ConnectionTypeDeterminer)cDev.ConnectionTypeDeterminer : null )} ].", false);
+					int index = supportedDevicesList.FindIndex(device => (device.vid, device.pid) == (cDev.Vid, cDev.Pid));
+                    if(index >= 0) {
+                        if (cDev.EnableDetection) {
+                            supportedDevicesList[index] = cDev.GetVidPidInfo();
+                        }
+                        else {
+							supportedDevicesList.RemoveAt(index);
+                        }
+                    }
+                    else {
+                        if(cDev.EnableDetection) {
+							supportedDevicesList.Add(cDev.GetVidPidInfo());
+						}
+                        else {
+                            // 
+						}
+                        
+                    }
+
+                }
+            }
+
+            return supportedDevicesList.ToArray();
+        }
+
         /// <summary>
         /// Sets a new array of Custom Devices to be used in the detection logic, while also refreshing the SupportedDevices array
         /// </summary>
@@ -472,6 +504,7 @@ namespace DS4Windows
         public static void SetCustomDevices(CustomDeviceInfo[] customDevices)
         {
 			DS4Devices.customDevices = customDevices.ToArray();
+            supportedDevices = GetSupportedDevices();
 		} 
 
         /// <summary>
