@@ -240,6 +240,7 @@ namespace DS4Windows
             new VidPidInfo(0x0C12, 0x0E15, "Playmax Wired Controller (PS4)", InputDeviceType.DS4, VidPidFeatureSet.NoBatteryReading | VidPidFeatureSet.NoGyroCalib), // Generic PS4 Controller by Playmax (brand primarily in New Zealand). Standard Wired PS4 controller, no Gyro, no Lightbar, no Battery. There is a newer model but I'm not sure if it uses a different Vid or Pid yet.
         };
 
+		private static VidPidInfo[] supportedDevices = knownDevices;
 
         private static bool detectNewControllers = true;
         private static long timestamp;
@@ -290,10 +291,10 @@ namespace DS4Windows
         {
             lock (Devices)
             {
-                IEnumerable<HidDevice> hDevices = HidDevices.EnumerateDS4(knownDevices);
+				IEnumerable<HidDevice> hDevices = HidDevices.EnumerateDS4(supportedDevices);
                 hDevices = hDevices.Where(d =>
                 {
-                    VidPidInfo metainfo = knownDevices.Single(x => x.vid == d.Attributes.VendorId &&
+					VidPidInfo metainfo = supportedDevices.Single(x => x.vid == d.Attributes.VendorId &&
                         x.pid == d.Attributes.ProductId);
                     return PreparePendingDevice(d, metainfo);
                 });
@@ -306,7 +307,7 @@ namespace DS4Windows
                 {
                     // Need VidPidInfo instance to get CheckConnectionDelegate and
                     // check the connection type
-                    VidPidInfo metainfo = knownDevices.Single(x => x.vid == d.Attributes.VendorId &&
+					VidPidInfo metainfo = supportedDevices.Single(x => x.vid == d.Attributes.VendorId &&
                         x.pid == d.Attributes.ProductId);
 
                     //return DS4Device.HidConnectionType(d);
@@ -324,7 +325,7 @@ namespace DS4Windows
                 //foreach (HidDevice hDevice in hDevices)
                 {
                     HidDevice hDevice = tempList[i];
-                    VidPidInfo metainfo = knownDevices.Single(x => x.vid == hDevice.Attributes.VendorId &&
+					VidPidInfo metainfo = supportedDevices.Single(x => x.vid == hDevice.Attributes.VendorId &&
                         x.pid == hDevice.Attributes.ProductId);
 
                     if (!metainfo.featureSet.HasFlag(VidPidFeatureSet.VendorDefinedDevice) &&
