@@ -1,0 +1,399 @@
+﻿<UserControl
+	x:Class="DS4WinWPF.DS4Forms.CustomDevicesEditor"
+	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:converters="clr-namespace:DS4WinWPF.DS4Forms.Converters"
+	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+	xmlns:lex="http://wpflocalizeextension.codeplex.com"
+	xmlns:local="clr-namespace:DS4WinWPF.DS4Forms.ViewModels"
+	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+	d:DataContext="{d:DesignInstance Type=local:CustomDevicesEditorViewModel}"
+	d:DesignHeight="450"
+	d:DesignWidth="800"
+	lex:LocalizeDictionary.DesignCulture=""
+	lex:ResxLocalizationProvider.DefaultAssembly="DS4Windows"
+	lex:ResxLocalizationProvider.DefaultDictionary="Strings"
+	mc:Ignorable="d">
+	<UserControl.Resources>
+		<converters:HexToIntConverter x:Key="HexToIntConverter" />
+
+	</UserControl.Resources>
+
+	<!--  Main Grid  -->
+	<DockPanel>
+		<!--  Bottom status bar  -->
+		<DockPanel Margin="0,2,0,2" DockPanel.Dock="Bottom">
+			<Button
+				x:Name="OptionsBtn"
+				Click="OptionsBtn_Click"
+				Content="Options">
+				<Button.ContextMenu>
+					<ContextMenu>
+						<MenuItem
+							x:Name="ResetListMenuItemBtn"
+							Click="ResetListMenuItemBtn_Click"
+							Header="{lex:Loc CustomDevices_ResetOption}" />
+					</ContextMenu>
+				</Button.ContextMenu>
+			</Button>
+			<Label Content="{lex:Loc Status}" />
+			<Label Content="{Binding StatusMessage}" />
+		</DockPanel>
+
+		<!--  Main area (read/write lockable)  -->
+		<Grid DockPanel.Dock="Top">
+			<Grid.Style>
+				<Style TargetType="Grid">
+					<Setter Property="IsEnabled" Value="False" />
+					<Setter Property="Visibility" Value="Visible" />
+					<Style.Triggers>
+						<DataTrigger Binding="{Binding IsReadWriteLockActive}" Value="False">
+							<Setter Property="IsEnabled" Value="True" />
+						</DataTrigger>
+						<DataTrigger Binding="{Binding IsReadyToUse}" Value="False">
+							<Setter Property="Visibility" Value="Hidden" />
+						</DataTrigger>
+					</Style.Triggers>
+				</Style>
+			</Grid.Style>
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition />
+				<ColumnDefinition Width="3*" />
+			</Grid.ColumnDefinitions>
+
+			<!--  Left side column  -->
+			<DockPanel Grid.Column="0">
+				<DockPanel.Style>
+					<Style TargetType="DockPanel">
+						<Setter Property="IsEnabled" Value="True" />
+						<Style.Triggers>
+							<DataTrigger Binding="{Binding IsInEditMode}" Value="True">
+								<Setter Property="IsEnabled" Value="False" />
+							</DataTrigger>
+						</Style.Triggers>
+					</Style>
+				</DockPanel.Style>
+
+				<!--  "Row" of buttons ( add/ edit / remove )  -->
+				<DockPanel
+					Height="20"
+					DockPanel.Dock="Top"
+					LastChildFill="True">
+					<Button
+						x:Name="AddBtn"
+						Padding="10,0,10,0"
+						Click="AddBtn_Click"
+						Content="{lex:Loc Add}"
+						DockPanel.Dock="Left" />
+					<Button
+						x:Name="RemoveBtn"
+						Padding="10,0,10,0"
+						Click="RemoveBtn_Click"
+						Content="{lex:Loc Remove}"
+						DockPanel.Dock="Right" />
+					<Button
+						x:Name="EditBtn"
+						
+						Click="EditBtn_Click"
+						Content="{lex:Loc Edit}"
+						DockPanel.Dock="Left" />
+				</DockPanel>
+
+				<!--  List of custom devices  -->
+				<ListBox
+					Padding="0"
+					HorizontalAlignment="Stretch"
+					HorizontalContentAlignment="Stretch"
+					DockPanel.Dock="Top"
+					ItemsSource="{Binding CustomDevicesVM}"
+					ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+					SelectedItem="{Binding SelectedDeviceVM}">
+					<ListBox.ItemContainerStyle>
+						<Style TargetType="ListBoxItem">
+							<Setter Property="Padding" Value="0" />
+						</Style>
+					</ListBox.ItemContainerStyle>
+					<ListBox.ItemTemplate>
+						<DataTemplate>
+							<!--  Data template for list visualization  -->
+							<Border
+								Padding="0"
+								BorderBrush="Gray"
+								BorderThickness="1">
+								<DockPanel Margin="1">
+									<Grid DockPanel.Dock="Top">
+										<Grid.RowDefinitions>
+											<RowDefinition />
+											<RowDefinition />
+											<RowDefinition />
+											<RowDefinition />
+										</Grid.RowDefinitions>
+										<Grid.ColumnDefinitions>
+											<ColumnDefinition Width="*" />
+											<ColumnDefinition Width="*" />
+											<ColumnDefinition Width="*" />
+											<ColumnDefinition Width="*" />
+										</Grid.ColumnDefinitions>
+										<!--  row 0  -->
+										<Border
+											Grid.Row="0"
+											Grid.ColumnSpan="4"
+											Margin="0,0,0,5"
+											Padding="0,2,0,2"
+											BorderBrush="Gray"
+											BorderThickness="0,0,0,1">
+											<TextBlock Text="{Binding Name}" />
+										</Border>
+										<!--  row 1  -->
+										<CheckBox
+											Grid.Row="1"
+											Grid.ColumnSpan="4"
+											VerticalAlignment="Center"
+											VerticalContentAlignment="Center"
+											Content="{lex:Loc CustomDevices_EnableDetection}"
+											IsChecked="{Binding EnableDetection}"
+											IsEnabled="False" />
+										<!--  row 2  -->
+										<TextBlock
+											Grid.Row="2"
+											Grid.Column="0"
+											Grid.ColumnSpan="2"
+											HorizontalAlignment="Left"
+											VerticalAlignment="Center"
+											Text="{Binding VidPidInHexString}"
+											TextAlignment="Left" />
+										<TextBlock
+											Grid.Row="2"
+											Grid.Column="2"
+											Grid.ColumnSpan="2"
+											HorizontalAlignment="Right"
+											VerticalAlignment="Center"
+											Text="{Binding InputDeviceType}" />
+
+
+										<!--  row 3  -->
+										<TextBlock
+											Grid.Row="3"
+											Grid.ColumnSpan="4"
+											HorizontalAlignment="Right"
+											VerticalAlignment="Center"
+											DockPanel.Dock="Right"
+											Text="{Binding FlagsAsBinaryString}"
+											TextAlignment="Right" />
+									</Grid>
+								</DockPanel>
+							</Border>
+
+
+
+
+
+
+
+						</DataTemplate>
+					</ListBox.ItemTemplate>
+
+				</ListBox>
+			</DockPanel>
+
+			<!--  Right side (edit area)  -->
+			<DockPanel
+				x:Name="EditorArea_DockPanel"
+				Grid.Column="1"
+				Background="Transparent"
+				IsEnabled="{Binding IsInEditMode}"
+				LastChildFill="True"
+				MouseLeave="EditorArea_Border_MouseLeave">
+
+				<!--  Save and cancel bottom buttons  -->
+				<Grid DockPanel.Dock="Bottom">
+					<Grid.ColumnDefinitions>
+						<ColumnDefinition />
+						<ColumnDefinition />
+					</Grid.ColumnDefinitions>
+					<Button
+						x:Name="SaveBtn"
+						Click="SaveBtn_Click"
+						Content="Save changes"
+						MouseEnter="SaveBtn_MouseEnter" />
+					<Button
+						x:Name="CancelChangesBtn"
+						Grid.Column="1"
+						Click="CancelChangesBtn_Click"
+						Content="Discard changes" />
+				</Grid>
+
+				<!--  Custom Device Info Editor  -->
+				<Border
+					Padding="5"
+					BorderBrush="Gray"
+					BorderThickness="1"
+					DockPanel.Dock="Bottom">
+					<DockPanel DataContext="{Binding EditorVM}" DockPanel.Dock="Top">
+						<!--  Editor main upper area  -->
+						<Grid DockPanel.Dock="Top">
+							<Grid.ColumnDefinitions>
+								<ColumnDefinition />
+								<ColumnDefinition />
+								<ColumnDefinition />
+								<ColumnDefinition />
+							</Grid.ColumnDefinitions>
+							<Grid.RowDefinitions>
+								<RowDefinition Height="15*" />
+								<RowDefinition Height="26*" />
+								<RowDefinition Height="26*" />
+								<RowDefinition Height="25.96" />
+								<RowDefinition Height="26*" />
+							</Grid.RowDefinitions>
+							<CheckBox
+								x:Name="EnableDetection_ChkBox"
+								Grid.Row="0"
+								Grid.ColumnSpan="4"
+								Content="{lex:Loc CustomDevices_EnableDetection}"
+								IsChecked="{Binding EnableDetection}"
+								MouseEnter="EnableDetection_ChxBox_MouseEnter" />
+							<Label
+								Grid.Row="1"
+								Grid.ColumnSpan="1"
+								Content="{lex:Loc Name}" />
+							<TextBox
+								x:Name="Name_TextBox"
+								Grid.Row="1"
+								Grid.Column="1"
+								Grid.ColumnSpan="3"
+								Margin="0,2,0,2"
+								DataObject.Pasting="HexTextBox_Pasting"
+								MaxLength="100"
+								MouseEnter="Name_TextBox_MouseEnter"
+								Text="{Binding Name}" />
+							<Label Grid.Row="2" Content="VID" />
+							<TextBox
+								x:Name="Vid_TextBox"
+								Grid.Row="2"
+								Grid.Column="1"
+								Margin="0,2,0,2"
+								DataObject.Pasting="HexTextBox_Pasting"
+								MaxLength="4"
+								MouseEnter="Vid_TextBox_MouseEnter"
+								PreviewTextInput="HexTextBox_PreviewTextInput"
+								Text="{Binding Vid, Converter={StaticResource HexToIntConverter}}" />
+							<Label
+								Grid.Row="2"
+								Grid.Column="2"
+								Content="PID" />
+							<TextBox
+								x:Name="Pid_TextBox"
+								Grid.Row="2"
+								Grid.Column="3"
+								Margin="0,2,0,2"
+								MaxLength="4"
+								MouseEnter="Pid_TextBox_MouseEnter"
+								PreviewTextInput="HexTextBox_PreviewTextInput"
+								Text="{Binding Pid, Converter={StaticResource HexToIntConverter}}" />
+							<Label
+								Grid.Row="3"
+								Grid.ColumnSpan="2"
+								Content="{lex:Loc CustomDevices_InputDeviceType}" />
+							<ComboBox
+								x:Name="InputDevType_Combobox"
+								Grid.Row="3"
+								Grid.Column="2"
+								Grid.ColumnSpan="2"
+								Margin="0,2,0,2"
+								ItemsSource="{Binding TypesOfInputDevice}"
+								MouseEnter="InputDevType_Combobox_MouseEnter"
+								SelectedItem="{Binding InputDeviceType}" />
+							<Label
+								Grid.Row="4"
+								Grid.ColumnSpan="2"
+								Content="{lex:Loc CustomDevices_ConnectionTypeDeterminer}" />
+							<ComboBox
+								x:Name="ConTypeDeterminers_ComboBox"
+								Grid.Row="4"
+								Grid.Column="2"
+								Grid.ColumnSpan="2"
+								Margin="0,2,0,2"
+								ItemsSource="{Binding TypesOfConnectionDeterminers}"
+								MouseEnter="ConTypeDeterminer_ComboBox_MouseEnter"
+								SelectedItem="{Binding ConnectionType}" />
+						</Grid>
+
+						<!--  Editor main botoom area  -->
+						<DockPanel Margin="0,5,0,0" DockPanel.Dock="Bottom">
+							<!--  Flags column on the left  -->
+							<DockPanel Margin="10" DockPanel.Dock="Left">
+								<Label Content="{lex:Loc CustomDevices_Flags}" DockPanel.Dock="Top" />
+								<UniformGrid
+									Columns="1"
+									DockPanel.Dock="Top"
+									Rows="7">
+																	<CheckBox
+										x:Name="Flag0_ChkBox"
+										Content="0"
+										IsChecked="{Binding IsOnlyInputData0x01FlagEnabled}"
+										MouseEnter="Flag0_ChkBox_MouseEnter" />
+																	<CheckBox
+										x:Name="Flag1_ChkBox"
+										Content="1"
+										IsChecked="{Binding IsOnlyOutputData0x05FlagEnabled}"
+										MouseEnter="Flag1_ChkBox_MouseEnter" />
+																	<CheckBox
+										x:Name="Flag2_ChkBox"
+										Content="2"
+										IsChecked="{Binding IsNoOutputDataFlagEnabled}"
+										MouseEnter="Flag2_ChkBox_MouseEnter" />
+																	<CheckBox
+										x:Name="Flag3_ChkBox"
+										Content="3"
+										IsChecked="{Binding IsNoBatteryReadingFlagEnabled}"
+										MouseEnter="Flag3_ChkBox_MouseEnter" />
+																	<CheckBox
+										x:Name="Flag4_ChkBox"
+										Content="4"
+										IsChecked="{Binding IsNoGyroCalibtureSetFlagEnabled}"
+										MouseEnter="Flag4_ChkBox_MouseEnter" />
+																	<CheckBox
+										x:Name="Flag5_ChkBox"
+										Content="5"
+										IsChecked="{Binding IsMonitorAudioFlagEnabled}"
+										MouseEnter="Flag5_ChkBox_MouseEnter" />
+																	<CheckBox
+										x:Name="Flag6_ChkBox"
+										Content="6"
+										IsChecked="{Binding IsVendorDefinedDeviceFlagEnabled}"
+										MouseEnter="Flag6_ChkBox_MouseEnter" />
+								</UniformGrid>
+							</DockPanel>
+
+							<!--  Information area on the right  -->
+							<Border BorderBrush="Gray" BorderThickness="1">
+								<DockPanel DockPanel.Dock="Right">
+									<Border
+										BorderBrush="Gray"
+										BorderThickness="0,0,0,1"
+										DockPanel.Dock="Top">
+										<TextBlock
+											Margin="5"
+											Text="Information (hover mouse over options to see)"
+											TextAlignment="Center" />
+									</Border>
+
+									<TextBox
+										x:Name="InfoDescription_TextBox"
+										Margin="0"
+										Padding="5"
+										AcceptsReturn="True"
+										DockPanel.Dock="Top"
+										IsReadOnly="True"
+										TextAlignment="Center"
+										TextWrapping="Wrap"
+										VerticalScrollBarVisibility="Auto" />
+								</DockPanel>
+							</Border>
+						</DockPanel>
+					</DockPanel>
+				</Border>
+			</DockPanel>
+		</Grid>
+	</DockPanel>
+</UserControl>
