@@ -187,6 +187,8 @@ namespace DS4Windows
             new VidPidInfo(0x0C12, 0x0E15, "Playmax Wired Controller (PS4)", InputDeviceType.DS4, VidPidFeatureSet.NoBatteryReading | VidPidFeatureSet.NoGyroCalib), // Generic PS4 Controller by Playmax (brand primarily in New Zealand). Standard Wired PS4 controller, no Gyro, no Lightbar, no Battery. There is a newer model but I'm not sure if it uses a different Vid or Pid yet.
             new VidPidInfo(0x3285, 0x0D17, "Nacon Revol 5 Pro Wired (PS4 Mode)", InputDeviceType.DS4, VidPidFeatureSet.NoBatteryReading), // Nacon Revolution 5 Pro (PS4 mode) connected via cable
             new VidPidInfo(0x3285, 0x0D16, "Nacon Revol 5 Pro Wireless (PS4 Mode)", InputDeviceType.DS4, VidPidFeatureSet.NoBatteryReading), // Nacon Revolution 5 Pro (PS4 mode) connected via its wireless adapter
+            new VidPidInfo(0x3285, 0x0D18, "Nacon Revol 5 Pro Wireless (PS5 Mode)", InputDeviceType.DS4, VidPidFeatureSet.NoBatteryReading), // Nacon Revolution 5 Pro (PS5 mode) connected via its wireless adapter
+            new VidPidInfo(0x3285, 0x0D19, "Nacon Revol 5 Pro Wired (PS5 Mode)", InputDeviceType.DS4, VidPidFeatureSet.NoBatteryReading), // Nacon Revolution 5 Pro (PS5 mode) connected via cable
 
 		};
 
