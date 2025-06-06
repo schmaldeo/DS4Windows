@@ -1798,6 +1798,23 @@ Suspend support not enabled.", true);
 
         private void DeviceOptionSettingsBtn_Click(object sender, RoutedEventArgs e)
         {
+			// Check if a ControllerRegisterOptionsWindow is already open
+			foreach (Window window in Application.Current.Windows) {
+				if (window is ControllerRegisterOptionsWindow existingWindow) {
+					if (existingWindow.WindowState == WindowState.Minimized) {
+						existingWindow.WindowState = WindowState.Normal;
+					}
+
+					// Temporarily set TopMost to true to force it to front
+					existingWindow.Topmost = true;
+					existingWindow.Topmost = false;
+
+					existingWindow.Activate(); // Set focus
+					return;
+				}
+			}
+
+			// If not found, create and show a new one
             ControllerRegisterOptionsWindow optsWindow =
                 new ControllerRegisterOptionsWindow(Program.rootHub.DeviceOptions, Program.rootHub);
 
