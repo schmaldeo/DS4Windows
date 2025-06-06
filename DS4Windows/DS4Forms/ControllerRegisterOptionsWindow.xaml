@@ -15,7 +15,7 @@
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
     </Window.Resources>
 	<TabControl>
-		<TabItem Header="Test">
+		<TabItem Header="General">
     <DockPanel x:Name="devOptionsDockPanel" Margin="4">
         <DockPanel>
             <StackPanel DockPanel.Dock="Top">
