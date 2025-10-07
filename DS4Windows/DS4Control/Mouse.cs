@@ -44,6 +44,7 @@ namespace DS4Windows
         public bool priorLeftDown, priorRightDown, priorUpperDown, priorMultiDown;
         private bool touchStarted = false;
         private bool touchEnded = false;
+        private bool touchStartedInPassthru = false;
         protected DS4Controls pushed = DS4Controls.None;
         protected Mapping.Click clicked = Mapping.Click.None;
         public int CursorGyroDead { get => cursor.GyroCursorDeadZone; set => cursor.GyroCursorDeadZone = value; }
@@ -1103,7 +1104,7 @@ namespace DS4Windows
             TouchpadOutMode tempMode = Global.TouchOutMode[deviceNum];
             if (tempMode == TouchpadOutMode.Mouse)
             {
-                if (Global.GetTouchActive(deviceNum))
+                if (Global.GetTouchActive(deviceNum) && !touchStartedInPassthru)
                 {
                     int[] disArray = Global.getTouchDisInvertTriggers(deviceNum);
                     tempBool = true;
@@ -1157,7 +1158,7 @@ namespace DS4Windows
             }
             else if (tempMode == TouchpadOutMode.AbsoluteMouse)
             {
-                if (Global.GetTouchActive(deviceNum))
+                if (Global.GetTouchActive(deviceNum) && !touchStartedInPassthru)
                 {
                     cursor.TouchesMovedAbsolute(arg);
                 }
@@ -1658,6 +1659,7 @@ namespace DS4Windows
         private void TouchButtonUpFlags()
         {
             upperDown = leftDown = rightDown = multiDown = false;
+            touchStartedInPassthru = false;
             touchButtonCurrentCandidate = TouchButtonModeCandidate.None;
         }
 
@@ -1777,6 +1779,11 @@ namespace DS4Windows
 
             if (activateTouchButton)
             {
+                if (Global.TouchOutMode[deviceNum] == TouchpadOutMode.Passthru)
+                {
+                    touchStartedInPassthru = true;
+                }
+
                 switch (touchButtonCurrentCandidate)
                 {
                     case TouchButtonModeCandidate.Left:
@@ -1816,7 +1823,7 @@ namespace DS4Windows
             }
 
             if (Global.GetDS4CSetting(deviceNum, DS4Controls.TouchLeft).IsDefault &&
-                leftDown)
+                leftDown && !touchStartedInPassthru)
             {
                 Mapping.MapClick(deviceNum, Mapping.Click.Left);
                 dragging2 = true;
