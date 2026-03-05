@@ -16,13 +16,14 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+using DS4Windows.InputDevices;
+using NLog.Targets;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Security.Principal;
-using DS4Windows.InputDevices;
 
 namespace DS4Windows
 {
@@ -136,6 +137,8 @@ namespace DS4Windows
         internal const int JOYCON_L_PRODUCT_ID = 0x2006;
         internal const int JOYCON_R_PRODUCT_ID = 0x2007;
         internal const int JOYCON_CHARGING_GRIP_PRODUCT_ID = 0x200E;
+        internal const int FLYDIGI_VID = 0x04B4;
+        internal const int VADER4PRO_PID = 0x2412;
 
         // https://support.steampowered.com/kb_article.php?ref=5199-TOKV-4426&l=english web site has a list of other PS4 compatible device VID/PID values and brand names. 
         // However, not all those are guaranteed to work with DS4Windows app so support is added case by case when users of DS4Windows app tests non-official DS4 gamepads.
@@ -184,6 +187,7 @@ namespace DS4Windows
             new VidPidInfo(0x044F, 0xD00E, "Thrustmaster eSwap Pro", InputDeviceType.DS4, VidPidFeatureSet.NoGyroCalib | VidPidFeatureSet.NoBatteryReading), // Thrustmaster eSwap Pro (wired only. No lightbar or gyro)
             new VidPidInfo(0x054C, 0x0268, "DualShock 3 (SXS)", InputDeviceType.DS3, VidPidFeatureSet.DefaultDS4, checkConnection: DS3Device.DetermineConnectionType), // Sony DualShock 3 using DsHidMini driver (SXS) or Sony Sixaxis driver
             new VidPidInfo(0x0C12, 0x0E15, "Playmax Wired Controller (PS4)", InputDeviceType.DS4, VidPidFeatureSet.NoBatteryReading | VidPidFeatureSet.NoGyroCalib), // Generic PS4 Controller by Playmax (brand primarily in New Zealand). Standard Wired PS4 controller, no Gyro, no Lightbar, no Battery. There is a newer model but I'm not sure if it uses a different Vid or Pid yet.
+            new VidPidInfo(FLYDIGI_VID,VADER4PRO_PID,"Flydigi Vader 4 Pro",InputDeviceType.Vader4Pro,VidPidFeatureSet.DefaultDS4 | VidPidFeatureSet.NoBatteryReading| VidPidFeatureSet.NoGyroCalib|VidPidFeatureSet.VendorDefinedDevice)
         };
 
 
@@ -237,6 +241,7 @@ namespace DS4Windows
             lock (Devices)
             {
                 IEnumerable<HidDevice> hDevices = HidDevices.EnumerateDS4(knownDevices);
+
                 hDevices = hDevices.Where(d =>
                 {
                     VidPidInfo metainfo = knownDevices.Single(x => x.vid == d.Attributes.VendorId &&
@@ -245,8 +250,20 @@ namespace DS4Windows
                 });
 
                 hDevices = hDevices.Where(IsRealDS4).Select(dev => dev);
+                hDevices = hDevices.Where(d =>
+                {
+                    int vid = d.Attributes.VendorId;
+                    int pid = d.Attributes.ProductId;
 
-                    //hDevices = from dev in hDevices where IsRealDS4(dev) select dev;
+                    if (vid == FLYDIGI_VID && pid == VADER4PRO_PID)
+                    {
+                        return d.DevicePath.Contains("&mi_02");
+                    }
+
+                    return true; // keep everything else
+                });
+
+                //hDevices = from dev in hDevices where IsRealDS4(dev) select dev;
                 // Sort Bluetooth first in case USB is also connected on the same controller.
                 hDevices = hDevices.OrderBy<HidDevice, ConnectionType>((HidDevice d) =>
                 {
@@ -310,7 +327,7 @@ namespace DS4Windows
                             }
                             catch (Exception) { }
                         }
-                        
+
                         // TODO in exclusive mode, try to hold both open when both are connected
                         if (isExclusiveMode && !hDevice.IsOpen)
                             hDevice.OpenDevice(false);
@@ -334,6 +351,10 @@ namespace DS4Windows
                         {
                             // Blank serial will mean that a JoyCon is not docked to a side
                             serial = JoyConDevice.ReadUSBSerial(hDevice);
+                        }
+                        else if (metainfo.inputDevType == InputDeviceType.Vader4Pro)
+                        {
+                            serial = hDevice.GetVader4ProMacAddress();
                         }
                         else
                         {
@@ -373,7 +394,7 @@ namespace DS4Windows
 
                         if (newdev && validSerial)
                         {
-                            DS4Device ds4Device = InputDeviceFactory.CreateDevice(metainfo.inputDevType, hDevice, metainfo.name, metainfo.featureSet);
+                            DS4Device ds4Device = InputDeviceFactory.CreateDevice(metainfo.inputDevType, hDevice, metainfo.name, metainfo.featureSet, serial);
                             //DS4Device ds4Device = new DS4Device(hDevice, metainfo.name, metainfo.featureSet);
                             if (ds4Device == null)
                             {
@@ -392,14 +413,14 @@ namespace DS4Windows
                                 DevicePaths.Add(hDevice.DevicePath);
                                 deviceSerials.Add(serial);
                                 serialDevices.Add(serial, ds4Device);
-                                AppLogger.LogToGui($"{DS4WinWPF.Properties.Resources.FoundController} {ds4Device.getMacAddress()} ({ds4Device.getConnectionType()}) ({ds4Device.DisplayName}).",false);
+                                AppLogger.LogToGui($"{DS4WinWPF.Properties.Resources.FoundController} {ds4Device.getMacAddress()} ({ds4Device.getConnectionType()}) ({ds4Device.DisplayName}).", false);
                             }
                         }
                     }
                 }
             }
         }
-        
+
         // Returns DS4 controllers that were found and are running
         public static IEnumerable<DS4Device> getDS4Controllers()
         {

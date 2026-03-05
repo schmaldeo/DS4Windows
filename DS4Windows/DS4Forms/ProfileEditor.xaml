@@ -36,11 +36,15 @@
         </StackPanel>
         <TabControl x:Name="sidebarTabControl" Width="480" DockPanel.Dock="Left" SelectionChanged="SidebarTabControl_SelectionChanged">
             <TabItem Header="{lex:Loc Controls}">
-                <DockPanel Width="470" LastChildFill="False">
-                    <DockPanel.Background>
+                <Grid Width="470">
+                    <Grid.Background>
                         <SolidColorBrush Color="DimGray"/>
-                    </DockPanel.Background>
-                    <Canvas x:Name="conCanvas" Width="440" Height="240" Margin="0,10,0,0" DockPanel.Dock="Top" >
+                    </Grid.Background>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="240" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <Canvas Grid.Row="0" x:Name="conCanvas" Width="440" Margin="0,10,0,0" DockPanel.Dock="Top" >
                         <Canvas.Resources>
                             <ContextMenu x:Key="presetMenu">
                                 <MenuItem x:Name="controlNameItem" Header="Name" IsEnabled="False" />
@@ -193,7 +197,7 @@
                         </Label>
                     </Canvas>
 
-                    <ListBox x:Name="mappingListBox" DockPanel.Dock="Bottom" Height="200" ItemsSource="{Binding Mappings}"
+                    <ListBox  Grid.Row="1" x:Name="mappingListBox" DockPanel.Dock="Bottom" ItemsSource="{Binding Mappings}"
                                 SelectedIndex="{Binding SelectedIndex}" Margin="6" ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                                 MouseDoubleClick="MappingListBox_MouseDoubleClick">
                         <ListBox.ItemTemplate>
@@ -205,7 +209,7 @@
                             </DataTemplate>
                         </ListBox.ItemTemplate>
                     </ListBox>
-                </DockPanel>
+                </Grid>
             </TabItem>
             <TabItem x:Name="specialActionsTab" Header="Special Actions">
                 <DockPanel x:Name="specialActionDockPanel">

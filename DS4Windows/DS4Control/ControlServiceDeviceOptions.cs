@@ -47,6 +47,9 @@ namespace DS4Windows
         private DS3DeviceOptions dS3DeviceOpts = new DS3DeviceOptions();
         public DS3DeviceOptions DS3DeviceOpts { get => dS3DeviceOpts; }
 
+        private Vader4ProDeviceOptions vader4proDeviceOpts = new Vader4ProDeviceOptions();
+        public Vader4ProDeviceOptions Vader4ProDeviceOpts { get => vader4proDeviceOpts; }
+
         private bool verboseLogMessages;
         public bool VerboseLogMessages { get => verboseLogMessages; set => verboseLogMessages = value; }
 
@@ -550,6 +553,106 @@ namespace DS4Windows
                 using var stringReader = new StringReader(baseNode.OuterXml);
                 using var xmlReader = XmlReader.Create(stringReader);
                 JoyConControllerOptsDTO dto = serializer.Deserialize(xmlReader) as JoyConControllerOptsDTO;
+                dto.MapTo(this);
+            }
+            catch (InvalidOperationException)
+            {
+            }
+        }
+    }
+
+    public class Vader4ProDeviceOptions
+    {
+        public const bool DEFAULT_ENABLE = true;
+        private bool enabled = DEFAULT_ENABLE;
+        public bool Enabled
+        {
+            get => enabled;
+            set
+            {
+                if (enabled == value) return;
+                enabled = value;
+                EnabledChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+        public event EventHandler EnabledChanged;
+    }
+
+    public class Vader4ProControllerOptions : ControllerOptionsStore
+    {
+        public const string XML_ELEMENT_NAME = "Vader4ProSupportSettings";
+
+        private bool enableHomeLED = true;
+        public bool EnableHomeLED
+        {
+            get => enableHomeLED;
+            set
+            {
+                if (enableHomeLED == value) return;
+                enableHomeLED = value;
+                EnableHomeLEDChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+        public event EventHandler EnableHomeLEDChanged;
+
+        public Vader4ProControllerOptions(InputDeviceType deviceType) : base(deviceType)
+        {
+        }
+
+        public override void PersistSettings(XmlDocument xmlDoc, XmlNode node)
+        {
+            string testStr = string.Empty;
+            XmlSerializer serializer = new XmlSerializer(typeof(Vader4ProControllerOptsDTO));
+
+            using (Utf8StringWriter strWriter = new Utf8StringWriter())
+            {
+                using XmlWriter xmlWriter = XmlWriter.Create(strWriter,
+                    new XmlWriterSettings()
+                    {
+                        Encoding = Encoding.UTF8,
+                        Indent = false,
+                        OmitXmlDeclaration = true, // only partial XML with no declaration
+                    });
+
+                // Write root element and children
+                Vader4ProControllerOptsDTO dto = new Vader4ProControllerOptsDTO();
+                dto.MapFrom(this);
+                // Omit xmlns:xsi and xmlns:xsd from output
+                serializer.Serialize(xmlWriter, dto,
+                    new XmlSerializerNamespaces(new[] { XmlQualifiedName.Empty }));
+                xmlWriter.Flush();
+                xmlWriter.Close();
+
+                testStr = strWriter.ToString();
+                //Trace.WriteLine("TEST OUTPUT");
+                //Trace.WriteLine(testStr);
+            }
+
+            XmlNode tempSwitchProNode = xmlDoc.CreateDocumentFragment();
+            tempSwitchProNode.InnerXml = testStr;
+
+            XmlNode tempOptsNode = node.SelectSingleNode(XML_ELEMENT_NAME);
+            if (tempOptsNode != null)
+            {
+                node.RemoveChild(tempOptsNode);
+            }
+
+            tempOptsNode = tempSwitchProNode;
+            node.AppendChild(tempOptsNode);
+        }
+
+        public override void LoadSettings(XmlDocument xmlDoc, XmlNode node)
+        {
+            XmlSerializer serializer = new XmlSerializer(typeof(Vader4ProControllerOptsDTO));
+            XmlNode baseNode = node.SelectSingleNode(XML_ELEMENT_NAME);
+            if (baseNode == null)
+                return;
+
+            try
+            {
+                using var stringReader = new StringReader(baseNode.OuterXml);
+                using var xmlReader = XmlReader.Create(stringReader);
+                Vader4ProControllerOptsDTO dto = serializer.Deserialize(xmlReader) as Vader4ProControllerOptsDTO;
                 dto.MapTo(this);
             }
             catch (InvalidOperationException)

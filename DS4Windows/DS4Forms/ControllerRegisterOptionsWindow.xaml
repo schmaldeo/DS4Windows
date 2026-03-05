@@ -22,6 +22,7 @@
                 <CheckBox Content="{lex:Loc ControllerSupportSwitchPro}" IsChecked="{Binding SwitchProDeviceOpts.Enabled}" />
                 <CheckBox Content="{lex:Loc ControllerSupportJoyCon}" IsChecked="{Binding JoyConDeviceOpts.Enabled}" />
                 <CheckBox Content="{lex:Loc ControllerSupportDS3}" IsChecked="{Binding DS3DeviceOpts.Enabled}" />
+                <CheckBox Content="{lex:Loc ControllerSupportVader4Pro}" IsChecked="{Binding Vader4ProDeviceOpts.Enabled}" />
                 <CheckBox Content="{lex:Loc ControllerSupportMoonlight}" IsChecked="{Binding UseMoonlight}" />
                 <CheckBox Content="{lex:Loc AdvancedSupport}" IsChecked="{Binding UseAdvancedMoonlight}"
                           Visibility="{Binding Path=UseMoonlight, Converter={StaticResource BooleanToVisibilityConverter}}" Margin="20 0 0 0"/>

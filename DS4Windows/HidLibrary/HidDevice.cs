@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Diagnostics;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.IO;
@@ -325,6 +327,34 @@ namespace DS4Windows
             }
 
             return MACAddr;
+        }
+        public string GetVader4ProMacAddress(int timeout = 1000)
+        {
+            byte[] command = new byte[32];
+            command[0] = 0x05;
+            command[1] = 236;
+            bool writeStatus = WriteOutputReportViaInterrupt(command, timeout);
+            if (!writeStatus) return GenerateFakeHwSerial();
+            var sw = Stopwatch.StartNew();
+            byte[] buffer = new byte[this.Capabilities.InputReportByteLength];
+            while (sw.ElapsedMilliseconds < timeout)
+            {
+                var status = ReadFile(buffer);
+
+                if (status == ReadStatus.Success)
+                {
+                    if (buffer[1] == 0xFF && buffer[15] == 236)
+                    {
+                        Span<byte> macSpan = buffer.AsSpan(5, 4);
+                        return string.Join(":", macSpan.ToArray().Select(b => b.ToString("X2")));
+                    }
+                }
+                else if (status == ReadStatus.ReadError)
+                {
+                    continue;
+                }
+            }
+            return GenerateFakeHwSerial();
         }
     }
 }

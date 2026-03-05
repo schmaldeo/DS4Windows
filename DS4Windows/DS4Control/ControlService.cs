@@ -592,6 +592,9 @@ namespace DS4Windows
                 case InputDevices.InputDeviceType.DS3:
                     result = deviceOptions.DS3DeviceOpts.Enabled;
                     break;
+                case InputDevices.InputDeviceType.Vader4Pro:
+                    result = deviceOptions.Vader4ProDeviceOpts.Enabled;
+                    break;
                 default:
                     break;
             }
@@ -801,6 +804,9 @@ namespace DS4Windows
                     break;
                 case InputDevices.InputDeviceType.SwitchPro:
                     result.AddRange(new DS4Controls[] { DS4Controls.Capture });
+                    break;
+                case InputDevices.InputDeviceType.Vader4Pro:
+                    result.AddRange(new DS4Controls[] { DS4Controls.FnL, DS4Controls.FnR, DS4Controls.BLP, DS4Controls.BRP, DS4Controls.SideL, DS4Controls.SideR, DS4Controls.Capture });
                     break;
                 default:
                     break;

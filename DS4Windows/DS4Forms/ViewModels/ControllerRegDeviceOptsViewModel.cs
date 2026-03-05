@@ -43,12 +43,14 @@ namespace DS4WinWPF.DS4Forms.ViewModels
         public bool EnableJoyCon { get => serviceDeviceOpts.JoyConDeviceOpts.Enabled; }
 
         public bool EnableDS3 { get => serviceDeviceOpts.DS3DeviceOpts.Enabled; }
+        public bool EnableVader4Pro { get => serviceDeviceOpts.Vader4ProDeviceOpts.Enabled; }
 
         public DS4DeviceOptions DS4DeviceOpts { get => serviceDeviceOpts.DS4DeviceOpts; }
         public DS3DeviceOptions DS3DeviceOpts { get => serviceDeviceOpts.DS3DeviceOpts; }
         public DualSenseDeviceOptions DSDeviceOpts { get => serviceDeviceOpts.DualSenseOpts; }
         public SwitchProDeviceOptions SwitchProDeviceOpts { get => serviceDeviceOpts.SwitchProDeviceOpts; }
         public JoyConDeviceOptions JoyConDeviceOpts { get => serviceDeviceOpts.JoyConDeviceOpts; }
+        public Vader4ProDeviceOptions Vader4ProDeviceOpts { get => serviceDeviceOpts.Vader4ProDeviceOpts; }
 
         public bool UseMoonlightChanged
         {
@@ -118,6 +120,10 @@ namespace DS4WinWPF.DS4Forms.ViewModels
             get => controllerOptionsStores[controllerSelectedIndex] as JoyConControllerOptions;
         }
 
+        public Vader4ProControllerOptions CurrentVader4ProOptions {
+            get => controllerOptionsStores[controllerSelectedIndex] as Vader4ProControllerOptions;
+        }
+
         private int currentTabSelectedIndex = 0;
         public int CurrentTabSelectedIndex
         {
@@ -176,6 +182,9 @@ namespace DS4WinWPF.DS4Forms.ViewModels
                 case DS4Windows.InputDevices.InputDeviceType.JoyConR:
                     result = 4;
                     break;
+                case DS4Windows.InputDevices.InputDeviceType.Vader4Pro:
+                    result = 5;
+                    break;
                 default:
                     // Default to empty control
                     result = 0;
@@ -207,6 +216,9 @@ namespace DS4WinWPF.DS4Forms.ViewModels
                 case DS4Windows.InputDevices.InputDeviceType.JoyConL:
                 case DS4Windows.InputDevices.InputDeviceType.JoyConR:
                     dataContextObject = new JoyConControllerOptionsWrapper(CurrentJoyConOptions, serviceDeviceOpts.JoyConDeviceOpts);
+                    break;
+                case DS4Windows.InputDevices.InputDeviceType.Vader4Pro:
+                    dataContextObject = new Vader4ProControllerOptionsWrapper(CurrentVader4ProOptions, serviceDeviceOpts.Vader4ProDeviceOpts);
                     break;
                 default:
                     break;
@@ -306,6 +318,22 @@ namespace DS4WinWPF.DS4Forms.ViewModels
         public SwitchProControllerOptionsWrapper(SwitchProControllerOptions options,
             SwitchProDeviceOptions parentOpts)
         {
+            this.options = options;
+            this.parentOptions = parentOpts;
+            parentOptions.EnabledChanged += (sender, e) => { VisibleChanged?.Invoke(this, EventArgs.Empty); };
+        }
+    }
+
+    public class Vader4ProControllerOptionsWrapper {
+        private Vader4ProControllerOptions options;
+        public Vader4ProControllerOptions Options { get => options; }
+
+        private Vader4ProDeviceOptions parentOptions;
+        public bool Visible { get => parentOptions.Enabled; }
+        public event EventHandler VisibleChanged;
+
+        public Vader4ProControllerOptionsWrapper(Vader4ProControllerOptions options,
+            Vader4ProDeviceOptions parentOpts) {
             this.options = options;
             this.parentOptions = parentOpts;
             parentOptions.EnabledChanged += (sender, e) => { VisibleChanged?.Invoke(this, EventArgs.Empty); };
