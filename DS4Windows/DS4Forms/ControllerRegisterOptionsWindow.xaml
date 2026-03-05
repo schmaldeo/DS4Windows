@@ -14,6 +14,8 @@
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
     </Window.Resources>
+	<TabControl>
+		<TabItem Header="General">
     <DockPanel x:Name="devOptionsDockPanel" Margin="4">
         <DockPanel>
             <StackPanel DockPanel.Dock="Top">
@@ -120,4 +122,11 @@
             </TabItem>
         </TabControl>
     </DockPanel>
+		</TabItem>
+		<TabItem Header="Custom Supported Devices">
+			<local:CustomDevicesEditor />
+		</TabItem>
+
+	</TabControl>
+
 </Window>

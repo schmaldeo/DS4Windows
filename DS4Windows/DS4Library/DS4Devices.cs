@@ -19,9 +19,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Security.Principal;
+using System.Text.Json;
 using DS4Windows.InputDevices;
 
 namespace DS4Windows
@@ -67,6 +69,60 @@ namespace DS4Windows
             }
         }
     }
+
+    public enum ConnectionTypeDeterminer
+    {
+        Undefined,
+        DS4,
+        DualSense,
+        SwitchPro,
+        JoyCon,
+        DS3,
+    }
+
+    public class CustomDeviceInfo
+    {
+		public string Name { get; init; }
+		public int Vid { get; init; }
+		public int Pid { get; init; }
+		public InputDeviceType InputDevType { get; init; }
+		public VidPidFeatureSet FeatureSet { get; init; }
+		public bool EnableDetection { get; init; }
+        public ConnectionTypeDeterminer? ConnectionTypeDeterminer { get; init; }
+
+		public CustomDeviceInfo() {}
+
+        public VidPidInfo GetVidPidInfo()
+        {
+            CheckConnectionDelegate connectionTypeDeterminer = null;
+			switch (this.ConnectionTypeDeterminer) {
+
+				case DS4Windows.ConnectionTypeDeterminer.DS4:
+					connectionTypeDeterminer = DS4Device.HidConnectionType;
+					break;
+				case DS4Windows.ConnectionTypeDeterminer.DualSense:
+					connectionTypeDeterminer = DualSenseDevice.HidConnectionType;
+					break;
+				case DS4Windows.ConnectionTypeDeterminer.SwitchPro:
+					connectionTypeDeterminer = SwitchProDevice.HidConnectionType;
+					break;
+				case DS4Windows.ConnectionTypeDeterminer.JoyCon:
+					connectionTypeDeterminer = JoyConDevice.HidConnectionType;
+					break;
+				case DS4Windows.ConnectionTypeDeterminer.DS3:
+					connectionTypeDeterminer = DS3Device.HidConnectionType;
+					break;
+				case DS4Windows.ConnectionTypeDeterminer.Undefined:
+                    connectionTypeDeterminer = null;
+					break;
+				case null:
+					break;
+				default:
+					break;
+			}
+			return new VidPidInfo(Vid,Pid,Name,InputDevType,FeatureSet,connectionTypeDeterminer);
+		}
+	}
 
     public class RequestElevationArgs : EventArgs
     {
@@ -137,6 +193,10 @@ namespace DS4Windows
         internal const int JOYCON_R_PRODUCT_ID = 0x2007;
         internal const int JOYCON_CHARGING_GRIP_PRODUCT_ID = 0x200E;
 
+
+        public const string customDevicesJsonFileName = "CustomDevices.json";
+        public static string CustomDevicesJsonFilePath => Path.Combine(DS4Windows.Global.appdatapath, customDevicesJsonFileName);
+
         // https://support.steampowered.com/kb_article.php?ref=5199-TOKV-4426&l=english web site has a list of other PS4 compatible device VID/PID values and brand names. 
         // However, not all those are guaranteed to work with DS4Windows app so support is added case by case when users of DS4Windows app tests non-official DS4 gamepads.
 
@@ -186,6 +246,8 @@ namespace DS4Windows
             new VidPidInfo(0x0C12, 0x0E15, "Playmax Wired Controller (PS4)", InputDeviceType.DS4, VidPidFeatureSet.NoBatteryReading | VidPidFeatureSet.NoGyroCalib), // Generic PS4 Controller by Playmax (brand primarily in New Zealand). Standard Wired PS4 controller, no Gyro, no Lightbar, no Battery. There is a newer model but I'm not sure if it uses a different Vid or Pid yet.
         };
 
+        private static CustomDeviceInfo[] customDevices = null;
+		private static VidPidInfo[] supportedDevices = knownDevices;
 
         private static bool detectNewControllers = true;
         private static long timestamp;
@@ -236,10 +298,10 @@ namespace DS4Windows
         {
             lock (Devices)
             {
-                IEnumerable<HidDevice> hDevices = HidDevices.EnumerateDS4(knownDevices);
+				IEnumerable<HidDevice> hDevices = HidDevices.EnumerateDS4(supportedDevices);
                 hDevices = hDevices.Where(d =>
                 {
-                    VidPidInfo metainfo = knownDevices.Single(x => x.vid == d.Attributes.VendorId &&
+					VidPidInfo metainfo = supportedDevices.Single(x => x.vid == d.Attributes.VendorId &&
                         x.pid == d.Attributes.ProductId);
                     return PreparePendingDevice(d, metainfo);
                 });
@@ -252,7 +314,7 @@ namespace DS4Windows
                 {
                     // Need VidPidInfo instance to get CheckConnectionDelegate and
                     // check the connection type
-                    VidPidInfo metainfo = knownDevices.Single(x => x.vid == d.Attributes.VendorId &&
+					VidPidInfo metainfo = supportedDevices.Single(x => x.vid == d.Attributes.VendorId &&
                         x.pid == d.Attributes.ProductId);
 
                     //return DS4Device.HidConnectionType(d);
@@ -270,7 +332,7 @@ namespace DS4Windows
                 //foreach (HidDevice hDevice in hDevices)
                 {
                     HidDevice hDevice = tempList[i];
-                    VidPidInfo metainfo = knownDevices.Single(x => x.vid == hDevice.Attributes.VendorId &&
+					VidPidInfo metainfo = supportedDevices.Single(x => x.vid == hDevice.Attributes.VendorId &&
                         x.pid == hDevice.Attributes.ProductId);
 
                     if (!metainfo.featureSet.HasFlag(VidPidFeatureSet.VendorDefinedDevice) &&
@@ -409,6 +471,70 @@ namespace DS4Windows
                 Devices.Values.CopyTo(controllers, 0);
                 return controllers;
             }
+        }
+
+		public static CustomDeviceInfo[] LoadCustomDevicesListFromDisk()
+		{
+			var options = new JsonSerializerOptions { WriteIndented = true };
+			string jsonString = File.ReadAllText(CustomDevicesJsonFilePath);
+			return JsonSerializer.Deserialize<CustomDeviceInfo[]>(jsonString);
+		}
+
+        public static void SaveCustomDevicesListToDisk(CustomDeviceInfo[] cDevsList)
+        {
+			var options = new JsonSerializerOptions { WriteIndented = true };
+			string jsonString = JsonSerializer.Serialize(cDevsList, options);
+			File.WriteAllText(CustomDevicesJsonFilePath, jsonString);
+        }
+
+		private static VidPidInfo[] GetSupportedDevices()
+        {
+			var supportedDevicesList = DS4Devices.knownDevices.ToList();
+
+			if (customDevices != null) {
+                foreach (var cDev in customDevices) {
+					AppLogger.LogToGui($"[Custom device] {cDev.Vid:X4}/{cDev.Pid:X4} - {cDev.Name} - [ {(cDev.EnableDetection ? "Detection: ON" : " Detection: OFF")} ][ Type: {(InputDeviceType)cDev.InputDevType} ][ FeatureSet: {Convert.ToString((int)cDev.FeatureSet, 2).PadLeft(7,'0')} ][ ConnectionTypeDeterminer: {((cDev.ConnectionTypeDeterminer != null) ? (ConnectionTypeDeterminer)cDev.ConnectionTypeDeterminer : null )} ].", false);
+					int index = supportedDevicesList.FindIndex(device => (device.vid, device.pid) == (cDev.Vid, cDev.Pid));
+                    if(index >= 0) {
+                        if (cDev.EnableDetection) {
+                            supportedDevicesList[index] = cDev.GetVidPidInfo();
+                        }
+                        else {
+							supportedDevicesList.RemoveAt(index);
+                        }
+                    }
+                    else {
+                        if(cDev.EnableDetection) {
+							supportedDevicesList.Add(cDev.GetVidPidInfo());
+						}
+                        else {
+                            // 
+						}
+                        
+                    }
+
+                }
+            }
+
+            return supportedDevicesList.ToArray();
+        }
+
+        /// <summary>
+        /// Sets a new array of Custom Devices to be used in the detection logic, while also refreshing the SupportedDevices array
+        /// </summary>
+        /// <param name="customDevices"></param>
+        public static void SetCustomDevices(CustomDeviceInfo[] customDevices)
+        {
+			DS4Devices.customDevices = customDevices.ToArray();
+            supportedDevices = GetSupportedDevices();
+		} 
+
+        /// <summary>
+        /// Returns a copy of the current array of Custom Devices 
+        /// </summary>
+        /// <returns></returns>
+        public static CustomDeviceInfo[] GetCustomDevices() {
+            return customDevices.ToArray();
         }
 
         public static void stopControllers()

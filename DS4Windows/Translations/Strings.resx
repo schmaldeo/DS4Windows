@@ -1478,4 +1478,122 @@ Please click OK to confirm that you have read the message. Press Cancel to be re
   <data name="InverseMotors" xml:space="preserve">
     <value>Inverse motors</value>
   </data>
+  <data name="ProfileEditor.VirtualTrigButtonOutput" xml:space="preserve">
+    <value />
+  </data>
+  <data name="CustomDevices_ResetOption" xml:space="preserve">
+    <value>(Re-)create list of custom devices (current list will be lost).</value>
+  </data>
+  <data name="CustomDevices_EnableDetection" xml:space="preserve">
+    <value>Enable detection</value>
+  </data>
+  <data name="CustomDevices_ConnectionTypeDeterminer" xml:space="preserve">
+    <value>Connection Type Determiner</value>
+  </data>
+  <data name="CustomDevices_Flags" xml:space="preserve">
+    <value>Flags</value>
+  </data>
+  <data name="CustomDevices_InfoHeader" xml:space="preserve">
+    <value>Information - hover mouse over options to check</value>
+  </data>
+  <data name="CustomDevices_Flag0_Info" xml:space="preserve">
+    <value>Flag 0
+Always read input reports in the "wired" format (valid only for PS4 controllers).
+
+For fake/third-party PS4 controllers that always send their input report in the "wired" format even when connected wirelessly.</value>
+  </data>
+  <data name="CustomDevices_Flag1_Info" xml:space="preserve">
+    <value>Flag 1
+Always send output reports in the "wired" format (valid only for PS4 controllers).
+
+For fake/third-party PS4 gamepads that only understand output reports (lightbar/rumble instructions) in the "wired" format even when connected wirelessly.</value>
+  </data>
+  <data name="CustomDevices_Flag2_Info" xml:space="preserve">
+    <value>Flag 2
+Fully disable output reports.
+
+For fake/third-party PS4 devices that don't support lightbar/rumble instructions at all.
+</value>
+  </data>
+  <data name="CustomDevices_Flag3_Info" xml:space="preserve">
+    <value>Flag 3
+Consider gamepad's battery as always at 99%.
+
+For devices that don't properly report their correct battery.</value>
+  </data>
+  <data name="CustomDevices_Flag4_Info" xml:space="preserve">
+    <value>Flag 4
+Disable gyro calibration.
+
+For devices that don't have gyro, or do have gyro but don't support the gyro calibration proccess.</value>
+  </data>
+  <data name="CustomDevices_Flag5_Info" xml:space="preserve">
+    <value>Flag 5
+Monitor audio (For PS4 gamepads)
+
+Your guess on what this flag do is as good as mine :D.</value>
+  </data>
+  <data name="CustomDevices_Flag6_Info" xml:space="preserve">
+    <value>Flag 6
+Detect device even if its Vendor Defined.
+
+This app is coded to only search for devices classified as gamepad or joystick. This flag will make this device detectable even if its classified as "vendor-defined" (necessary for DS3 controllers running under DsHidMini's DS4W mode).</value>
+  </data>
+  <data name="CustomDevices_EnableDetectionDescription" xml:space="preserve">
+    <value>If enabled then devices with the VID/PID defined here will become detectable.
+
+Keep in mind that for the device to work properly it has to "communicate" the same way as the chosen controller type (DS4, DualSense, Switch Pro, Joy-Con etc).
+
+If the VID/PID already exists in the natively supported devices list then the custom one will have priority (native one is replaced).</value>
+  </data>
+  <data name="CustomDevices_SaveChangesBtn_Info" xml:space="preserve">
+    <value>After changes are made it may be necessary to reconnected gamepads for them to become detectable.</value>
+  </data>
+  <data name="CustomDevices_NameTextbox_Info" xml:space="preserve">
+    <value>Friendly name to facilitate identification.
+
+Can be the official name or a custom one, doesn't affect detection.</value>
+  </data>
+  <data name="CustomDevices_VidPid_Info" xml:space="preserve">
+    <value>The VID (Vendor ID) and PID (Product ID) of the device.
+
+This app looks for compatible devices by directly looking for their VID/PID, so this must absolutely be the same as your device's for it to be detectable.</value>
+  </data>
+  <data name="CustomDevices_InputDeviceType_Info" xml:space="preserve">
+    <value>What your device is in reality, or what it tries to copy/mimic.
+
+This MUST match your device type (or how it presents itself). If you choose the wrong type or if your device doesn't properly communicate properly as this app expects then it won't function correctly.</value>
+  </data>
+  <data name="CustomDevices_ConnectionType_Description" xml:space="preserve">
+    <value>The type of logic to be used to determine the connection type of your device.
+Must match your real device type.
+</value>
+  </data>
+  <data name="CustomDevices_Status_LoadSuccess" xml:space="preserve">
+    <value>Successfully loaded from disk the list of custom devices types</value>
+  </data>
+  <data name="CustomDevices_StatusLoad_Failed" xml:space="preserve">
+    <value>Failed to load from disk the list of custom devices types. Try restarting the app or rebuilding the list from zero (see options)</value>
+  </data>
+  <data name="CustomDevices_Status_ListNotFound" xml:space="preserve">
+    <value>List of custom devices types not found on disk.</value>
+  </data>
+  <data name="CustomDevices_Status_WritingToDisk" xml:space="preserve">
+    <value>Writing changes to disk</value>
+  </data>
+  <data name="CustomDevices_Status_SaveSuccess" xml:space="preserve">
+    <value>Successfully saved changes to disk</value>
+  </data>
+  <data name="CustomDevices_Status_SaveFailed" xml:space="preserve">
+    <value>Failed to save changes to disk!</value>
+  </data>
+  <data name="CustomDevices_InputDeviceType" xml:space="preserve">
+    <value>Input device type</value>
+  </data>
+  <data name="CustomDevices_Log_LoadingFile" xml:space="preserve">
+    <value>Loading list of custom devices type from disk.</value>
+  </data>
+  <data name="CustomDevices_Log_LoadFail" xml:space="preserve">
+    <value>teste</value>
+  </data>
 </root>
